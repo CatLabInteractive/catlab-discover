@@ -1,0 +1,22 @@
+{
+  "name": "catlabinteractive.eukles",
+  "description": "",
+  "main": "",
+  "authors": [
+    "Thijs Van der Schaeghe <thijs@catlab.be>"
+  ],
+  "license": "Private",
+  "homepage": "",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "swagger-ui": "^2.2.10",
+    "bootstrap": "^3.3.6"
+  },
+  "private": true
+}
