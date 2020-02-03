@@ -8,6 +8,7 @@ use CatLab\Charon\Collections\RouteCollection;
 use CatLab\Charon\Enums\Action;
 use CatLab\Requirements\Exceptions\ResourceValidationException;
 use Illuminate\Http\Request;
+use Artisan;
 
 /**
  * Class DeviceController
@@ -63,6 +64,11 @@ class DeviceController extends Base\ResourceController
 
         $entity->save();
 
+        // call the update process (might take a while)
+        $exitCode = Artisan::call('devices:update', [
+            'deviceId' => 1
+        ]);
+
         return $this->createViewEntityResponse($entity);
     }
 
@@ -95,6 +101,11 @@ class DeviceController extends Base\ResourceController
         }
 
         $entity->save();
+
+        // call the update process (might take a while)
+        $exitCode = Artisan::call('devices:update', [
+            'deviceId' => 1
+        ]);
 
         return $this->createViewEntityResponse($entity);
     }

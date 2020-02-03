@@ -22,4 +22,31 @@ class Device extends Model
             $device->updateKey = Str::random(32);
         });
     }
+
+    /**
+     * Find a unique subdomain name.
+     * @return string
+     */
+    public function generateDomainName()
+    {
+        $preferredSubDomain = Str::slug($this->name);
+
+        $preferredDomain = $preferredSubDomain . config('cloudflare.ROOT_DOMAIN');
+        $tries = 0;
+        while ($tries < 999) {
+            if ($tries === 0) {
+                $checkDomain = $preferredDomain;
+            } else {
+                $checkDomain = $preferredDomain . sprintf("%03d", $tries);
+            }
+            $tries ++;
+
+            $exists = Device::where('domain', '=', $checkDomain)->exists();
+            if (!$exists) {
+                return $checkDomain;
+            }
+        }
+
+        return '';
+    }
 }
