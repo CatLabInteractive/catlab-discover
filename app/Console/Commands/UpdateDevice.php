@@ -48,7 +48,6 @@ class UpdateDevice extends Command
         $device = Device::findOrFail($deviceId);
 
         $cloudFlare = new CloudFlareService($this->output);
-        $letsEncrypt = new LetsEncrypt();
 
         // does this device have a domain yet?
         if (!$device->domain) {
@@ -61,6 +60,22 @@ class UpdateDevice extends Command
         $this->output->writeln('Updating records for: <info>' . $device->domain . '</info>');
         $result = $cloudFlare->setDnsRecord('A', $device->domain, $device->ip);
 
-        //$letsEncrypt->generateSsl($device->domain);
+        if ($device->needsRefreshCertificate()) {
+            $this->output->writeln('Updating certificate');
+            $this->updateSslCertificate($device, $cloudFlare);
+        } else {
+            $this->output->writeln('Not updating certificate, valid until: <info>' . $device->getLastCertificate()->expires . '</info>');
+        }
+    }
+
+    /**
+     * @param Device $device
+     * @param CloudFlareService $cloudFlare
+     * @throws CloudFlareException
+     */
+    protected function updateSslCertificate(Device $device, CloudFlareService $cloudFlare)
+    {
+        $letsEncrypt = new LetsEncrypt();
+        $letsEncrypt->generateSsl($device, $cloudFlare);
     }
 }

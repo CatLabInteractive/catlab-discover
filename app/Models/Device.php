@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
@@ -48,5 +49,29 @@ class Device extends Model
         }
 
         return '';
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function certificates()
+    {
+        return $this->hasMany(SslCertificate::class);
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getLastCertificate()
+    {
+        return $this->certificates->first();
+    }
+
+    /**
+     * @return bool
+     */
+    public function needsRefreshCertificate()
+    {
+        return !$this->certificates()->where('expires', '>', Carbon::yesterday())->exists();
     }
 }

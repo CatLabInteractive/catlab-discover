@@ -3,6 +3,7 @@
 namespace App\Http\Api\V1\ResourceDefinitions;
 
 use App\Models\Device;
+use CatLab\Charon\Enums\Action;
 use CatLab\Charon\Models\ResourceDefinition;
 
 /**
@@ -46,9 +47,9 @@ class DeviceResourceDefinition extends ResourceDefinition
             ->string()
             ->visible(true, true);
 
-        $this->relationship('ssl', SslCertificateResourceDefinition::class)
+        $this->relationship('lastCertificate', SslCertificateResourceDefinition::class)
             ->visible(true, true)
             ->one()
-            ->expanded();
+            ->expanded(Action::VIEW);
     }
 }

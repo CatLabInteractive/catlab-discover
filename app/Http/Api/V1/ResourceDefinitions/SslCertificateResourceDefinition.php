@@ -18,7 +18,20 @@ class SslCertificateResourceDefinition extends ResourceDefinition
         $this->field('certificate')
             ->visible(true, true);
 
-        $this->field('key')
+        $this->field('public_key')
+            ->visible(true, true);
+
+        $this->field('private_key')
+            ->visible(true, true);
+
+        $this->field('certificate')
+            ->visible(true, true);
+
+        $this->field('status')
+            ->visible(true, true);
+
+        $this->field('expires')
+            ->datetime()
             ->visible(true, true);
     }
 }

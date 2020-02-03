@@ -67,6 +67,16 @@ class CloudFlareService
     }
 
     /**
+     * @param $domain
+     * @param $value
+     * @throws CloudFlareException
+     */
+    public function setAcmeChallenge($domain, $value)
+    {
+        $this->setDnsRecord('TXT', '_acme-challenge.' . $domain, $value);
+    }
+
+    /**
      * @param $type
      * @param $domain
      * @param $value
