@@ -66,7 +66,7 @@ class DeviceController extends Base\ResourceController
 
         // call the update process (might take a while)
         $exitCode = Artisan::call('devices:update', [
-            'deviceId' => 1
+            'deviceId' => $entity->id
         ]);
 
         return $this->createViewEntityResponse($entity);
