@@ -38,7 +38,7 @@ class Device extends Model
             if ($tries === 0) {
                 $checkDomain = $preferredDomain;
             } else {
-                $checkDomain = $preferredDomain . sprintf("%03d", $tries);
+                $checkDomain = $preferredSubDomain . sprintf("%03d", $tries) . config('cloudflare.ROOT_DOMAIN');
             }
             $tries ++;
 
