@@ -23,10 +23,16 @@ class LetsEncrypt
     private $client;
 
     /**
+     * @var \Illuminate\Console\OutputStyle
+     */
+    private $output;
+
+    /**
      * LetsEncrypt constructor.
      */
-    public function __construct()
+    public function __construct(\Illuminate\Console\OutputStyle $output)
     {
+        $this->output = $output;
         $this->email = config('letsencrypt.email');
 
         $this->client = new LEClient(
@@ -40,6 +46,7 @@ class LetsEncrypt
     /**
      * @param Device $device
      * @param CloudFlareService $dnsService
+     * @return bool
      * @throws CloudFlareException
      */
     public function generateSsl(Device $device, CloudFlareService $dnsService)
@@ -52,6 +59,7 @@ class LetsEncrypt
             $pending = $order->getPendingAuthorizations(LEOrder::CHALLENGE_TYPE_DNS);
             if (!empty($pending)) {
                 foreach ($pending as $challenge) {
+                    $this->output->writeln('Setting DNS acme challenge');
                     $dnsService->setAcmeChallenge($challenge['identifier'], $challenge['DNSDigest']);
                     $order->verifyPendingOrderAuthorization($challenge['identifier'], LEOrder::CHALLENGE_TYPE_DNS);
                 }
@@ -60,11 +68,13 @@ class LetsEncrypt
 
         if($order->allAuthorizationsValid()) {
             if(!$order->isFinalized()) {
+                $this->output->writeln('Finalizing order');
                 $order->finalizeOrder();
             }
 
             if($order->isFinalized()) {
                 if ($order->getCertificate()) {
+                    $this->output->writeln('Order finalized! Setting certificate.');
                     $this->setCertificate($device, $order);
                     return true;
                 }

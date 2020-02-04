@@ -49,6 +49,7 @@ class DeviceResourceDefinition extends ResourceDefinition
 
         $this->relationship('lastCertificate', SslCertificateResourceDefinition::class)
             ->visible(true, true)
+            ->display('certificate')
             ->one()
             ->expanded(Action::VIEW);
     }
