@@ -75,7 +75,7 @@ class UpdateDevice extends Command
      */
     protected function updateSslCertificate(Device $device, CloudFlareService $cloudFlare)
     {
-        $letsEncrypt = new LetsEncrypt();
+        $letsEncrypt = new LetsEncrypt($this->output);
         $letsEncrypt->generateSsl($device, $cloudFlare);
     }
 }
