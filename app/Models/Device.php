@@ -72,6 +72,9 @@ class Device extends Model
      */
     public function needsRefreshCertificate()
     {
-        return !$this->certificates()->where('expires', '>', Carbon::yesterday())->exists();
+        $yesterday = Carbon::yesterday();
+        $query = $this->certificates()->whereDate('expires', '>', $yesterday);
+
+        return !$query->exists();
     }
 }
