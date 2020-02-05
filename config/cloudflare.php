@@ -1,11 +1,11 @@
 <?php
 return [
 
-    'ROOT_DOMAIN' => env('CLOUDFLARE_ROOT_DOMAIN'),
+    'rootDomain' => env('CLOUDFLARE_ROOT_DOMAIN'),
 
-    'CLOUDFLARE_ZONE' => env('CLOUDFLARE_ZONE'),
+    'validRootDomains' => explode(',', env('CLOUDFLARE_VALID_ROOT_DOMAINS')),
 
-    'CLOUDFLARE_EMAIL' => env('CLOUDFLARE_EMAIL'),
-    'CLOUDFLARE_API_KEY' => env('CLOUDFLARE_API_KEY')
+    'email' => env('CLOUDFLARE_EMAIL'),
+    'apiKey' => env('CLOUDFLARE_API_KEY')
 
 ];

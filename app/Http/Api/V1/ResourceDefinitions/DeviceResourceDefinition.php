@@ -47,6 +47,9 @@ class DeviceResourceDefinition extends ResourceDefinition
             ->string()
             ->visible(true, true);
 
+        $this->field('desiredDomain')
+            ->writeable(true, false);
+
         $this->relationship('lastCertificate', SslCertificateResourceDefinition::class)
             ->visible(true, true)
             ->display('certificate')

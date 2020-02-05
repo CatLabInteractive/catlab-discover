@@ -39,7 +39,7 @@ class LetsEncrypt
             [ $this->email ],
             LEClient::LE_PRODUCTION,
             LEClient::LOG_OFF,
-            storage_path('letsencrypt')
+            storage_path('letsencrypt/')
         );
     }
 

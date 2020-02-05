@@ -62,6 +62,17 @@ class DeviceController extends Base\ResourceController
 
         $entity = $this->toEntity($inputResource, $writeContext);
 
+        // do we have a desired domain?
+        if ($entity->desiredDomain) {
+            // check if unique
+            if (!$entity->isValidDomain($entity->desiredDomain)) {
+                abort(403, 'Desired domain is not valid or not available anymore.');
+            }
+
+            $entity->domain = $entity->desiredDomain;
+            unset($entity->desiredDomain);
+        }
+
         $entity->save();
 
         // call the update process (might take a while)

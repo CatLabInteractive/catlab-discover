@@ -4,9 +4,11 @@ namespace App\Services;
 
 use Cloudflare\API\Auth\APIKey;
 use Cloudflare\API\Endpoints\DNS;
+use Cloudflare\API\Endpoints\Zones;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 
 /**
  * Class CloudflareService
@@ -16,14 +18,19 @@ class CloudFlareService
 {
     private $adapter;
 
-    private $dnsRecords;
+    private $dnsRecords = [];
 
-    private $dnsRecordsLoaded = false;
+    private $dnsRecordsLoaded = [];
 
     /**
      * @var DNS
      */
     private $dnsEndpoint;
+
+    /**
+     * @var Zones
+     */
+    private $zones;
 
     /**
      * @var string
@@ -38,19 +45,50 @@ class CloudFlareService
     /**
      * CloudFlareService constructor.
      */
-    public function __construct(\Illuminate\Console\OutputStyle $output)
+    public function __construct(\Illuminate\Console\OutputStyle $output = null)
     {
-        $email = config('cloudflare.CLOUDFLARE_EMAIL');
-        $apiKey = config('cloudflare.CLOUDFLARE_API_KEY');
+        $email = config('cloudflare.email');
+        $apiKey = config('cloudflare.apiKey');
 
         $key = new \Cloudflare\API\Auth\APIKey($email, $apiKey);
         $this->adapter = new \Cloudflare\API\Adapter\Guzzle($key);
-
-        $this->dnsRecords = new Collection();
         $this->dnsEndpoint = new \Cloudflare\API\Endpoints\DNS($this->adapter);
-        $this->zone = config('cloudflare.CLOUDFLARE_ZONE');
+        $this->zones = new \Cloudflare\API\Endpoints\Zones($this->adapter);
 
         $this->output = $output;
+    }
+
+    /**
+     * @param $domainName
+     * @return bool
+     * @throws \Cloudflare\API\Endpoints\EndpointException
+     */
+    public function isValidDomainName($domainName)
+    {
+        if (Str::endsWith($domainName, config('cloudflare.rootDomain'))) {
+            return true;
+        }
+
+        if (!$this->isInValidRootDomainNames($domainName)) {
+            return false;
+        }
+
+        $zoneId = $this->getZoneId($domainName);
+        if (!$zoneId) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * @param $domainName
+     * @return bool
+     */
+    private function isInValidRootDomainNames($domainName)
+    {
+        $rootDomain = $this->findRootDomain($domainName);
+        return !!$rootDomain;
     }
 
     /**
@@ -77,6 +115,33 @@ class CloudFlareService
     }
 
     /**
+     * @param $domainName
+     * @return string
+     * @throws \Cloudflare\API\Endpoints\EndpointException
+     */
+    public function getZoneId($domainName)
+    {
+        $rootDomain = $this->findRootDomain($domainName);
+        if (!$rootDomain) {
+            return null;
+        }
+
+        return $this->zones->getZoneID($rootDomain);
+    }
+
+    private function findRootDomain($domainName)
+    {
+        $validDomains = config('cloudflare.validRootDomains') ?? [];
+
+        foreach ($validDomains as $v) {
+            if (Str::endsWith($domainName, $v)) {
+                return $v;
+            }
+        }
+        return null;
+    }
+
+    /**
      * @param $type
      * @param $domain
      * @param $value
@@ -100,7 +165,7 @@ class CloudFlareService
         }
 
         foreach ($existing as $v) {
-            $this->deleteDnsRecordRequest($v->id);
+            $this->deleteDnsRecordRequest($v);
         }
     }
 
@@ -113,9 +178,12 @@ class CloudFlareService
      */
     private function createDnsRecordRequest($type, $domain, $ip)
     {
-        $this->output->writeln('Writing ' . $type . ' record for domain ' . $domain . ' with value ' . $ip);
+        if ($this->output) {
+            $this->output->writeln('Writing ' . $type . ' record for domain ' . $domain . ' with value ' . $ip);
+        }
+
         try {
-            $this->dnsEndpoint->addRecord($this->zone, $type, $domain, $ip, 0, false);
+            $this->dnsEndpoint->addRecord($this->getZoneId($domain), $type, $domain, $ip, 0, false);
             return true;
         } catch (ClientException $e) {
             $this->handleErrors($e);
@@ -130,11 +198,15 @@ class CloudFlareService
      * @return bool
      * @throws CloudFlareException
      */
-    private function deleteDnsRecordRequest($recordId)
+    private function deleteDnsRecordRequest($record)
     {
-        $this->output->writeln('Deleting dns record ' . $recordId);
+        dd($record);
+        if ($this->output) {
+            $this->output->writeln('Deleting dns record ' . $record->id);
+        }
+
         try {
-            $this->dnsEndpoint->deleteRecord($this->zone, $recordId);
+            $this->dnsEndpoint->deleteRecord($record->zone, $record->id);
             return true;
         } catch (ClientException $e) {
             $this->handleErrors($e);
@@ -153,9 +225,13 @@ class CloudFlareService
      */
     private function updateDnsRecordRequest($type, $record)
     {
-        $this->output->writeln('Updating record ' . $record->name . ' with value ' . $record->content);
+        dd($record);
+        if ($this->output) {
+            $this->output->writeln('Updating record ' . $record->name . ' with value ' . $record->content);
+        }
+
         try {
-            $this->dnsEndpoint->updateRecordDetails($this->zone, $record->id, [
+            $this->dnsEndpoint->updateRecordDetails($record->zone, $record->id, [
                 'type' => $record->type,
                 'content' => $record->content,
                 'name' => $record->name
@@ -171,23 +247,26 @@ class CloudFlareService
 
     private function getDnsRecordFromDomain($domain, $type)
     {
-        return $this->getDnsRecords()
+        return $this->getDnsRecords($domain)
             ->where('name', '=', $domain)
             ->where('type', '=', $type);
     }
 
     /**
      * @return Collection
+     * @throws \Cloudflare\API\Endpoints\EndpointException
      */
-    private function getDnsRecords()
+    private function getDnsRecords($domain)
     {
-        if (!$this->dnsRecordsLoaded) {
-            $this->dnsRecordsLoaded = true;
-            foreach ($this->dnsEndpoint->listRecords($this->zone)->result as $record) {
-                $this->dnsRecords->add($record);
+        $zoneId = $this->getZoneId($domain);
+        if (!isset($this->dnsRecordsLoaded[$zoneId])) {
+            $this->dnsRecordsLoaded[$zoneId] = true;
+            $this->dnsRecords[$zoneId] = new Collection();
+            foreach ($this->dnsEndpoint->listRecords($zoneId)->result as $record) {
+                $this->dnsRecords[$zoneId]->add($record);
             }
         }
-        return $this->dnsRecords;
+        return $this->dnsRecords[$zoneId];
     }
 
     /**

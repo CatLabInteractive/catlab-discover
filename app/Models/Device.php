@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\CloudFlareService;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
@@ -25,6 +26,36 @@ class Device extends Model
     }
 
     /**
+     * @param $domain
+     * @return bool
+     */
+    public function isUniqueDomain($domain)
+    {
+        $exists = Device::where('domain', '=', $domain)->exists();
+        if (!$exists) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Is a domain valid & can we use it in cloudflare?
+     * @param $domain
+     * @return bool
+     * @throws \Cloudflare\API\Endpoints\EndpointException
+     */
+    public function isValidDomain($domain)
+    {
+        if (!$this->isUniqueDomain($domain)) {
+            return false;
+        }
+
+        $cloudflare = new CloudFlareService();
+        return $cloudflare->isValidDomainName($domain);
+    }
+
+    /**
      * Find a unique subdomain name.
      * @return string
      */
@@ -42,8 +73,7 @@ class Device extends Model
             }
             $tries ++;
 
-            $exists = Device::where('domain', '=', $checkDomain)->exists();
-            if (!$exists) {
+            if (self::isUniqueDomain($checkDomain)) {
                 return $checkDomain;
             }
         }
