@@ -55,5 +55,10 @@ class DeviceResourceDefinition extends ResourceDefinition
             ->display('certificate')
             ->one()
             ->expanded(Action::VIEW);
+
+        $this->relationship('services', ServiceResourceDefinition::class)
+            ->visible(true, true)
+            ->many()
+            ->expanded(Action::VIEW);
     }
 }

@@ -80,6 +80,9 @@ class DeviceController extends Base\ResourceController
             'deviceId' => $entity->id
         ]);
 
+        // refresh entity
+        $entity = $entity->fresh();
+
         return $this->createViewEntityResponse($entity);
     }
 
@@ -117,6 +120,8 @@ class DeviceController extends Base\ResourceController
         $exitCode = Artisan::call('devices:update', [
             'deviceId' => $entity->id
         ]);
+
+        $entity = $entity->fresh();
 
         return $this->createViewEntityResponse($entity);
     }

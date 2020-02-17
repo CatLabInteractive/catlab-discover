@@ -97,6 +97,7 @@ class CloudFlareService
      * @param $ip
      * @return bool
      * @throws CloudFlareException
+     * @throws \Cloudflare\API\Endpoints\EndpointException
      */
     public function setDnsRecord($type, $domain, $ip)
     {
@@ -108,6 +109,7 @@ class CloudFlareService
      * @param $domain
      * @param $value
      * @throws CloudFlareException
+     * @throws \Cloudflare\API\Endpoints\EndpointException
      */
     public function setAcmeChallenge($domain, $value)
     {
@@ -146,6 +148,7 @@ class CloudFlareService
      * @param $domain
      * @param $value
      * @throws CloudFlareException
+     * @throws \Cloudflare\API\Endpoints\EndpointException
      */
     private function updateOrCreateRecord($type, $domain, $value)
     {
@@ -175,6 +178,7 @@ class CloudFlareService
      * @param $ip
      * @return bool
      * @throws CloudFlareException
+     * @throws \Cloudflare\API\Endpoints\EndpointException
      */
     private function createDnsRecordRequest($type, $domain, $ip)
     {
@@ -182,8 +186,13 @@ class CloudFlareService
             $this->output->writeln('Writing ' . $type . ' record for domain ' . $domain . ' with value ' . $ip);
         }
 
+        $zoneId = $this->getZoneId($domain);
+        if (!$zoneId) {
+            return false;
+        }
+
         try {
-            $this->dnsEndpoint->addRecord($this->getZoneId($domain), $type, $domain, $ip, 0, false);
+            $this->dnsEndpoint->addRecord($zoneId, $type, $domain, $ip, 0, false);
             return true;
         } catch (ClientException $e) {
             $this->handleErrors($e);
@@ -200,7 +209,6 @@ class CloudFlareService
      */
     private function deleteDnsRecordRequest($record)
     {
-        dd($record);
         if ($this->output) {
             $this->output->writeln('Deleting dns record ' . $record->id);
         }
@@ -225,7 +233,6 @@ class CloudFlareService
      */
     private function updateDnsRecordRequest($type, $record)
     {
-        dd($record);
         if ($this->output) {
             $this->output->writeln('Updating record ' . $record->name . ' with value ' . $record->content);
         }
@@ -259,6 +266,10 @@ class CloudFlareService
     private function getDnsRecords($domain)
     {
         $zoneId = $this->getZoneId($domain);
+        if (!$zoneId) {
+            return new Collection();
+        }
+
         if (!isset($this->dnsRecordsLoaded[$zoneId])) {
             $this->dnsRecordsLoaded[$zoneId] = true;
             $this->dnsRecords[$zoneId] = new Collection();

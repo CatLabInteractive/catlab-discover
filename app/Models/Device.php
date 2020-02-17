@@ -63,13 +63,13 @@ class Device extends Model
     {
         $preferredSubDomain = Str::slug($this->name);
 
-        $preferredDomain = $preferredSubDomain . config('cloudflare.ROOT_DOMAIN');
+        $preferredDomain = $preferredSubDomain . config('cloudflare.rootDomain');
         $tries = 0;
         while ($tries < 999) {
             if ($tries === 0) {
                 $checkDomain = $preferredDomain;
             } else {
-                $checkDomain = $preferredSubDomain . sprintf("%03d", $tries) . config('cloudflare.ROOT_DOMAIN');
+                $checkDomain = $preferredSubDomain . sprintf("%03d", $tries) . config('cloudflare.rootDomain');
             }
             $tries ++;
 
@@ -87,6 +87,14 @@ class Device extends Model
     public function certificates()
     {
         return $this->hasMany(SslCertificate::class);
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function services()
+    {
+        return $this->hasMany(Service::class);
     }
 
     /**
