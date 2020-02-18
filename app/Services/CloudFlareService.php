@@ -254,9 +254,22 @@ class CloudFlareService
 
     private function getDnsRecordFromDomain($domain, $type)
     {
+        $zoneId = $this->getZoneId($domain);
+        if (!$zoneId) {
+            return new Collection();
+        }
+
+        /*
         return $this->getDnsRecords($domain)
             ->where('name', '=', $domain)
             ->where('type', '=', $type);
+        */
+
+        $collection = new Collection();
+        foreach ($this->dnsEndpoint->listRecords($zoneId, $type, $domain)->result as $record) {
+            $collection->add($record);
+        }
+        return $collection;
     }
 
     /**
