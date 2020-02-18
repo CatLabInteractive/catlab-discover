@@ -214,7 +214,7 @@ class CloudFlareService
         }
 
         try {
-            $this->dnsEndpoint->deleteRecord($record->zone, $record->id);
+            $this->dnsEndpoint->deleteRecord($record->zone_id, $record->id);
             return true;
         } catch (ClientException $e) {
             $this->handleErrors($e);
@@ -238,7 +238,7 @@ class CloudFlareService
         }
 
         try {
-            $this->dnsEndpoint->updateRecordDetails($record->zone, $record->id, [
+            $this->dnsEndpoint->updateRecordDetails($record->zone_id, $record->id, [
                 'type' => $record->type,
                 'content' => $record->content,
                 'name' => $record->name
