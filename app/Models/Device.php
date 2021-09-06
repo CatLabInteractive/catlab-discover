@@ -102,7 +102,10 @@ class Device extends Model
      */
     public function getLastCertificate()
     {
-        return $this->certificates->first();
+        return $this
+            ->certificates()
+            ->orderBy('created_at', 'desc')
+            ->first();
     }
 
     /**
