@@ -62,7 +62,7 @@
     "repositories": [
         {
             "type": "vcs",
-            "url": "git@github.com:helios-ag/LEClient.git"
+            "url": "https://github.com/helios-ag/LEClient.git"
         }
     ]
 }
