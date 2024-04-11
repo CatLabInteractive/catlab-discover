@@ -13,7 +13,7 @@
         "fideloper/proxy": "^4.0",
         "laravel/framework": "^9.0",
         "laravel/tinker": "^2.0",
-        "yourivw/leclient": "dev-master"
+        "helios-ag/leclient": "dev-master"
     },
     "require-dev": {
         "fzaninotto/faker": "^1.4",
