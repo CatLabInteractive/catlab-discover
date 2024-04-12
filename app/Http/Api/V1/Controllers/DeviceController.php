@@ -81,8 +81,7 @@ class DeviceController extends Base\ResourceController
         ]);
 
         // refresh entity
-        sleep(1);
-        $entity = $entity->fresh();
+        $entity->refresh();
 
         return $this->createViewEntityResponse($entity);
     }
@@ -122,8 +121,7 @@ class DeviceController extends Base\ResourceController
             'deviceId' => $entity->id
         ]);
 
-        sleep(1);
-        $entity = $entity->fresh();
+        $entity->refresh();
 
         return $this->createViewEntityResponse($entity);
     }
