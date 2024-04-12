@@ -138,6 +138,7 @@ class DeviceController extends Base\ResourceController
                 'deviceId' => $entity->id
             ]);
 
+            $entity->refresh();
             if ($entity->needsRefreshCertificate()) {
                 sleep(self::SLEEP);
             }
