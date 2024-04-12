@@ -134,9 +134,13 @@ class DeviceController extends Base\ResourceController
     {
         for ($i = 0; $i < self::MAX_TRIES && $entity->needsRefreshCertificate(); $i ++) {
 
-            $exitCode = Artisan::call('devices:update', [
-                'deviceId' => $entity->id
-            ]);
+            try {
+                $exitCode = Artisan::call('devices:update', [
+                    'deviceId' => $entity->id
+                ]);
+            } catch (\Exception $e) {
+                // do nothing
+            }
 
             $entity->refresh();
             if ($entity->needsRefreshCertificate()) {
