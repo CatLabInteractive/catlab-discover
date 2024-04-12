@@ -64,15 +64,12 @@ class LetsEncrypt
                     $order->verifyPendingOrderAuthorization($challenge['identifier'], LEOrder::CHALLENGE_TYPE_DNS);
                 }
             }
-            $order = $this->client->getOrCreateOrder($domain, [ $domain ]);
         }
 
         if($order->allAuthorizationsValid()) {
             if(!$order->isFinalized()) {
                 $this->output->writeln('Finalizing order');
                 $order->finalizeOrder();
-
-                $order = $this->client->getOrCreateOrder($domain, [ $domain ]);
             }
 
             if($order->isFinalized()) {

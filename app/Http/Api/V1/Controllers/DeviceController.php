@@ -20,6 +20,10 @@ class DeviceController extends Base\ResourceController
 
     const DEVICE_KEY_HEADER = 'x-deviceKey';
 
+    const MAX_TRIES = 10;
+
+    const SLEEP = 5;
+
     /**
      * @param RouteCollection $routes
      * @throws \CatLab\Charon\Exceptions\InvalidContextAction
@@ -76,9 +80,7 @@ class DeviceController extends Base\ResourceController
         $entity->save();
 
         // call the update process (might take a while)
-        $exitCode = Artisan::call('devices:update', [
-            'deviceId' => $entity->id
-        ]);
+        $this->updateDeviceKey();
 
         // refresh entity
         $entity->refresh();
@@ -117,12 +119,29 @@ class DeviceController extends Base\ResourceController
         $entity->save();
 
         // call the update process (might take a while)
-        $exitCode = Artisan::call('devices:update', [
-            'deviceId' => $entity->id
-        ]);
+        $this->updateDeviceKey();
 
         $entity->refresh();
 
         return $this->createViewEntityResponse($entity);
+    }
+
+    /**
+     * @param Device $entity
+     * @return void
+     */
+    protected function updateDeviceKey(Device $entity)
+    {
+        for ($i = 0; $i < self::MAX_TRIES && $entity->needsRefreshCertificate(); $i ++) {
+
+            $exitCode = Artisan::call('devices:update', [
+                'deviceId' => $entity->id
+            ]);
+
+            if ($entity->needsRefreshCertificate()) {
+                sleep(self::SLEEP);
+            }
+
+        }
     }
 }
