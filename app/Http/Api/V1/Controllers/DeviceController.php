@@ -22,7 +22,7 @@ class DeviceController extends Base\ResourceController
 
     const MAX_TRIES = 10;
 
-    const SLEEP = 5;
+    const SLEEP = 10;
 
     /**
      * @param RouteCollection $routes
