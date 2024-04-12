@@ -80,7 +80,7 @@ class DeviceController extends Base\ResourceController
         $entity->save();
 
         // call the update process (might take a while)
-        $this->updateDeviceKey();
+        $this->updateDeviceKey($entity);
 
         // refresh entity
         $entity->refresh();
@@ -119,7 +119,7 @@ class DeviceController extends Base\ResourceController
         $entity->save();
 
         // call the update process (might take a while)
-        $this->updateDeviceKey();
+        $this->updateDeviceKey($entity);
 
         $entity->refresh();
 
