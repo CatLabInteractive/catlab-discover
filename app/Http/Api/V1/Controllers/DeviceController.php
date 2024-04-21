@@ -132,6 +132,12 @@ class DeviceController extends Base\ResourceController
      */
     protected function updateDeviceKey(Device $entity)
     {
+        // ALWAYS execute it once (to update the ip address)
+        $exitCode = Artisan::call('devices:update', [
+            'deviceId' => $entity->id
+        ]);
+
+        // if we need to refresh the certificate, keep trying
         for ($i = 0; $i < self::MAX_TRIES && $entity->needsRefreshCertificate(); $i ++) {
 
             try {
