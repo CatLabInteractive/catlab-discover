@@ -2,7 +2,7 @@
 var=${PHP_BIN:-php}
 var=${COMPOSER_BIN:-composer}
 
-$COMPOSER_BIN install --no-dev
+$COMPOSER_BIN update --no-dev
 $PHP_BIN artisan migrate --force
 
 
