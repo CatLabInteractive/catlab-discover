@@ -164,7 +164,9 @@ class CloudFlareService
         // check if the value has changed.
         if ($existingRecord->content !== $value) {
             $existingRecord->content = $value;
-            $this->updateDnsRecordRequest($type, $existingRecord);
+
+			$zoneId = $this->getZoneId($domain);
+            $this->updateDnsRecordRequest($type, $existingRecord, $zoneId);
         }
 
         foreach ($existing as $v) {
@@ -231,14 +233,14 @@ class CloudFlareService
      * @return bool
      * @throws CloudFlareException
      */
-    private function updateDnsRecordRequest($type, $record)
+    private function updateDnsRecordRequest($type, $record, $zoneId)
     {
         if ($this->output) {
             $this->output->writeln('Updating record ' . $record->name . ' with value ' . $record->content);
         }
 
         try {
-            $this->dnsEndpoint->updateRecordDetails($record->zone_id, $record->id, [
+            $this->dnsEndpoint->updateRecordDetails($zoneId, $record->id, [
                 'type' => $record->type,
                 'content' => $record->content,
                 'name' => $record->name
